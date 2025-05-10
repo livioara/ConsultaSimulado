@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Consulta de Títulos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 18px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 16px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            margin-top: 15px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .resultado {
+            margin-top: 30px;
+            font-size: 30px;
+            text-align: center;
+        }
+
+        .resultado table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+        }
+
+        .resultado td {
+            padding: 15px;
+            font-size: 30px;
+        }
+
+        .resultado tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        .resultado tr:nth-child(odd) {
+            background-color: #d9f2d9;
+        }
+
+        .sugestoes-lista {
+            border: 1px solid #ccc;
+            border-top: none;
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: white;
+            position: absolute;
+            width: calc(100% - 40px);
+            z-index: 1000;
+            display: none;
+            border-radius: 0 0 8px 8px;
+        }
+
+        .sugestao-item {
+            padding: 10px;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .sugestao-item:hover {
+            background-color: #f0f0f0;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+
+            input, button {
+                padding: 18px;
+                font-size: 22px;
+            }
+
+            .resultado {
+                font-size: 26px;
+            }
+
+            .resultado td {
+                font-size: 26px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>CONSULTA SEÇÃO</h2>
+
+    <form method="POST" action="/buscar">
+        <label for="nome">Nome:</label>
+        <input type="text" id="nome" name="nome" placeholder="Digite o nome" value="{{ nome or '' }}" autocomplete="off" required>
+        <div id="sugestoes" class="sugestoes-lista"></div>
+
+        <label for="secao">Seção:</label>
+        <input type="text" id="secao" name="secao" placeholder="Digite a seção" value="{{ secao or '' }}" required>
+
+        <button type="submit">Buscar</button>
+    </form>
+
+    {% if resultados %}
+    <div class="resultado">
+        <strong>Títulos encontrados:</strong>
+        <table>
+            {% for titulo in resultados %}
+            <tr><td>{{ titulo[0] }}</td></tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% elif mensagem %}
+    <div class="resultado">
+        <strong>{{ mensagem }}</strong>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const inputNome = document.getElementById("nome");
+const sugestoesBox = document.getElementById("sugestoes");
+
+inputNome.addEventListener("input", function () {
+    const query = this.value;
+
+    if (query.length < 2) {
+        sugestoesBox.innerHTML = '';
+        sugestoesBox.style.display = 'none';
+        return;
+    }
+
+    fetch(`/autocomplete?query=${encodeURIComponent(query)}`)
+        .then(res => res.json())
+        .then(data => {
+            sugestoesBox.innerHTML = '';
+            if (data.sugestoes.length === 0) {
+                sugestoesBox.style.display = 'none';
+                return;
+            }
+
+            data.sugestoes.forEach(nome => {
+                const item = document.createElement("div");
+                item.classList.add("sugestao-item");
+                item.textContent = nome;
+                item.addEventListener("click", () => {
+                    inputNome.value = nome;
+                    sugestoesBox.innerHTML = '';
+                    sugestoesBox.style.display = 'none';
+                });
+                sugestoesBox.appendChild(item);
+            });
+
+            sugestoesBox.style.display = 'block';
+        });
+});
+
+document.addEventListener("click", function (e) {
+    if (!sugestoesBox.contains(e.target) && e.target !== inputNome) {
+        sugestoesBox.style.display = 'none';
+    }
+});
+</script>
+
+</body>
+</html>
