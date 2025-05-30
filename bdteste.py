@@ -30,7 +30,7 @@ secoes = ['101', '102']  # 2 seções diferentes
 
 for nome in nomes:
     for secao in secoes:
-        for i in range(4):  # 4 títulos por seção
+        for i in range(2):  # 4 títulos por seção
             letra = fake.random_uppercase_letter()
             numero = random.randint(1, 999)
             titulo = f'Título {letra}{numero}'
