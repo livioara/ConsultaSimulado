@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 
 # Lê o arquivo CSV
-df = pd.read_csv('data/titulos.csv')
+df = pd.read_csv('data/titulo.csv')
 print(df.columns)
 
 
